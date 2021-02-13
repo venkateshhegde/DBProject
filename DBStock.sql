@@ -1,9 +1,9 @@
 Select *
-from VEN."StockReco"
+from VEN.STOCKRECOMMENDATIONTABLE
 
-
+Create View WhatToBuyView as
 Select STOCKSYMBOL, COUNT(STOCKSYMBOL) as count
-from VEN."StockReco"
+from VEN.STOCKRECOMMENDATIONTABLE
 group by STOCKSYMBOL
 order by count desc
 
@@ -12,16 +12,43 @@ order by count desc
 -- auto-generated definition
 -- auto-generated definition
 
-drop table Ven."PositionTable";
-create table Ven."PositionTable"
+drop table Ven.POSITIONTABLE;
+
+create table Ven.POSITIONTABLE
 (
-    "Symbol"       VARCHAR(100) not null,
-    "Quantity"     DOUBLE not null,
-    "CostPerShare" DOUBLE not null,
-    "AssetType"    VARCHAR(100) not null
+    "SYMBOL"       VARCHAR(100) not null,
+    "QUANTITY"     DECIMAL (8,2) not null,
+    "COSTPERSHARE" DECIMAL(8,2)  not null,
+    "ASSETTYPE"    VARCHAR(100) not null
 );
 
 create index POSITIONTABLE_SYMBOL_INDEX
-	on Ven."PositionTable" ("Symbol");
+    on Ven.POSITIONTABLE (SYMBOL);
+
+Create VIEW Ven.WhatToBuyNowView as
+(Select *
+from Ven.STOCKRECOMMENDATIONTABLE
+where Ven.STOCKRECOMMENDATIONTABLE.RECOMMENDEDBY not like '%SELL%'
+  and Ven.STOCKRECOMMENDATIONTABLE.RECOMMENDEDBY not like '%HOLD%'
+  and STOCKSYMBOL not in (Select STOCKSYMBOL  from Ven.POSITIONTABLE ) )
+
+Create VIEW Ven.OptionsOnlyView as
+(Select *
+from Ven.POSITIONTABLE
+where Ven.POSITIONTABLE.ASSETTYPE = 'Option');
 
 
+Create VIEW Ven.StockOnlyView as
+(Select *
+from Ven.POSITIONTABLE
+where Ven.POSITIONTABLE.ASSETTYPE = 'Equity');
+
+Create VIEW Ven.PnLStockOnlyView as
+Select Ven.MARKETPRICE.SYMBOL as Symbol,
+       Ven.MARKETPRICE.PRICE*Ven.POSITIONTABLE.QUANTITY as "CURRENT",
+       Ven.POSITIONTABLE.COSTPERSHARE*Ven.POSITIONTABLE.QUANTITY as COSTBASIS,
+      Ven.MARKETPRICE.PRICE*Ven.POSITIONTABLE.QUANTITY -
+       Ven.POSITIONTABLE.COSTPERSHARE*Ven.POSITIONTABLE.QUANTITY as PNL
+from Ven.MARKETPRICE , Ven.POSITIONTABLE
+where Ven.MARKETPRICE.SYMBOL = Ven.POSITIONTABLE.SYMBOL and
+      Ven.POSITIONTABLE.ASSETTYPE='Equity'
