@@ -22,6 +22,6 @@ create table Ven."PositionTable"
 );
 
 create index POSITIONTABLE_SYMBOL_INDEX
-	on "PositionTable" ("Symbol");
+	on Ven."PositionTable" ("Symbol");
 
 
