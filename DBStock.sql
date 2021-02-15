@@ -1,13 +1,19 @@
 Select *
 from VEN.STOCKRECOMMENDATIONTABLE;
 
-Create View WhatToBuyView as
+Create View Ven.WhatToBuyView as
 Select STOCKSYMBOL, COUNT(STOCKSYMBOL) as count
 from VEN.STOCKRECOMMENDATIONTABLE
 group by STOCKSYMBOL
 order by count desc;
 
+Create View Ven.PNLTotal as
+(Select SUM(PNL) as PNLTotal from Ven.PnLStockOnlyView) ;
 
+select * from Ven.POSITIONTABLE where AssetType = 'Equity' and SYMBOL not in
+                                      (Select STOCKSYMBOL from Ven.STOCKRECOMMENDATIONTABLE)
+
+Select distinct (STOCKSYMBOL) from STOCKRECOMMENDATIONTABLE ;
 
 -- auto-generated definition
 -- auto-generated definition
@@ -30,7 +36,8 @@ Create VIEW Ven.WhatToBuyNowView as
 from Ven.STOCKRECOMMENDATIONTABLE
 where Ven.STOCKRECOMMENDATIONTABLE.RECOMMENDEDBY not like '%SELL%'
   and Ven.STOCKRECOMMENDATIONTABLE.RECOMMENDEDBY not like '%HOLD%'
-  and STOCKSYMBOL not in (Select STOCKSYMBOL  from Ven.POSITIONTABLE ) );
+  and Ven.STOCKRECOMMENDATIONTABLE.STOCKSYMBOL not in
+      (Select SYMBOL  from Ven.POSITIONTABLE  ) );
 
 Create VIEW Ven.OptionsOnlyView as
 (Select *
@@ -54,7 +61,9 @@ where Ven.MARKETPRICE.SYMBOL = Ven.POSITIONTABLE.SYMBOL and
       Ven.POSITIONTABLE.ASSETTYPE='Equity';
 
 
-
+Create View HowMuchToBuyOfWhat as
+(Select STOCKSYMBOL, PRICE , CAST( 1000/PRICE as INT) as HowMuch
+from Ven.WhatToBuyNowView, Ven.MARKETPRICE where STOCKSYMBOL=SYMBOL);
 
 
 
