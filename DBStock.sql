@@ -61,7 +61,7 @@ where Ven.MARKETPRICE.SYMBOL = Ven.POSITIONTABLE.SYMBOL and
       Ven.POSITIONTABLE.ASSETTYPE='Equity';
 
 
-Create View HowMuchToBuyOfWhat as
+Create View Ven.HowMuchToBuyOfWhat as
 (Select STOCKSYMBOL, PRICE , CAST( 1000/PRICE as INT) as HowMuch
 from Ven.WhatToBuyNowView, Ven.MARKETPRICE where STOCKSYMBOL=SYMBOL);
 
