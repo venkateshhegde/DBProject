@@ -74,7 +74,11 @@ Select * from ven.SYMBOLSTABLE where SYMBOL not in (Select SYMBOL from Ven.MARKE
 insert into Ven.MARKETPRICE
     (select STOCKSYMBOL, 0,0 from Ven.WhatToBuyNowView where Ven.WhatToBuyNowView.STOCKSYMBOL not in (Select SYMBOL from MARKETPRICE))
 
+-- Process to update positions
+-- TD Ameritrade , Get Positions Simple view, Format columns as numbers
+-- Delete All Rows, Paste All rows..
 
+--
 
 select distinct (STOCKSYMBOL) from Ven.WhatToBuyNowView;
 Select * from Ven.STOCKRECOMMENDATIONTABLE
@@ -85,6 +89,44 @@ Select * from Ven.HOWMUCHTOBUYOFWHAT, Ven.STOCKRECOMMENDATIONTABLE
 where Ven.HOWMUCHTOBUYOFWHAT.STOCKSYMBOL = Ven.STOCKRECOMMENDATIONTABLE.STOCKSYMBOL;
 
 
+
+---
+
+Select Sum(Price*HowMuch) from Ven.HowMuchToBuyOfWhat;
+
+---
+Select STOCKSYMBOL, Price, HowMuch, (Price*HowMuch) as Cost from Ven.HowMuchToBuyOfWhat;
+
+--
+Create View Ven.CostView as
+Select a.SYMBOL, a.COSTPERSHARE, a.QUANTITY, (a.COSTPERSHARE*a.QUANTITY) as Cost
+from
+     Ven.POSITIONTABLE a
+where a.SYMBOL in (Select distinct(STOCKSYMBOL) from Ven.STOCKRECOMMENDATIONTABLE);
+
+--
+--
+
+drop view Ven.PNLVIEW;
+
+Create View Ven.PNLView as
+Select a.SYMBOL, a.COSTPERSHARE, a.QUANTITY, (a.COSTPERSHARE*a.QUANTITY) as Cost,
+       (p.PRICE*a.QUANTITY) as CurrentValue,  (p.PRICE*a.QUANTITY) - (a.COSTPERSHARE*a.QUANTITY) as PnL
+from
+     Ven.POSITIONTABLE a, Ven.MARKETPRICE p
+where a.SYMBOL = p.SYMBOL and
+ a.SYMBOL in (Select distinct(STOCKSYMBOL) from Ven.STOCKRECOMMENDATIONTABLE);
+
+
+Create View Ven.TotalPNL as
+Select Sum( (p.PRICE*a.QUANTITY) - (a.COSTPERSHARE*a.QUANTITY) ) as TotalPnL
+from
+     Ven.POSITIONTABLE a, Ven.MARKETPRICE p
+where a.SYMBOL = p.SYMBOL and
+ a.SYMBOL in (Select distinct(STOCKSYMBOL) from Ven.STOCKRECOMMENDATIONTABLE);
+
+
+--
 --REMOVE DUPS FROM STOCK SYMBOLS
 
 Select SUM(PRICE*HOWMUCH) from Ven.HowMuchToBuyOfWhat;
