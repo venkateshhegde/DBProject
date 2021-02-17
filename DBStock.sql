@@ -60,10 +60,46 @@ from Ven.MARKETPRICE , Ven.POSITIONTABLE
 where Ven.MARKETPRICE.SYMBOL = Ven.POSITIONTABLE.SYMBOL and
       Ven.POSITIONTABLE.ASSETTYPE='Equity';
 
+
+
+drop view Ven.HowMuchToBuyOfWhat;
+
 Create View Ven.HowMuchToBuyOfWhat as
-(Select STOCKSYMBOL, PRICE , CAST( 1000/PRICE as INT) as HowMuch
+(Select STOCKSYMBOL, PRICE , CAST( (1000/PRICE)+1 as INT) as HowMuch
 from Ven.WhatToBuyNowView, Ven.MARKETPRICE where STOCKSYMBOL=SYMBOL);
 
+Select * from ven.SYMBOLSTABLE where SYMBOL not in (Select SYMBOL from Ven.MARKETPRICE)
+
+
+insert into Ven.MARKETPRICE
+    (select STOCKSYMBOL, 0,0 from Ven.WhatToBuyNowView where Ven.WhatToBuyNowView.STOCKSYMBOL not in (Select SYMBOL from MARKETPRICE))
+
+
+
+select distinct (STOCKSYMBOL) from Ven.WhatToBuyNowView;
+Select * from Ven.STOCKRECOMMENDATIONTABLE
+where STOCKSYMBOL in
+(Select HOWMUCHTOBUYOFWHAT.STOCKSYMBOL from Ven.HowMuchToBuyOfWhat);
+
+Select * from Ven.HOWMUCHTOBUYOFWHAT, Ven.STOCKRECOMMENDATIONTABLE
+where Ven.HOWMUCHTOBUYOFWHAT.STOCKSYMBOL = Ven.STOCKRECOMMENDATIONTABLE.STOCKSYMBOL;
+
+
+--REMOVE DUPS FROM STOCK SYMBOLS
+
+Select SUM(PRICE*HOWMUCH) from Ven.HowMuchToBuyOfWhat;
+
+drop table TempX;
+create table  TempX (SYMBOL) AS
+    Select * from Ven.SYMBOLSTABLE WITH NO DATA;
+
+insert into TempX  (Select distinct(SYMBOL) from Ven.SYMBOLSTABLE);
+
+truncate table Ven.SYMBOLSTABLE;
+
+insert into Ven.SYMBOLSTABLE  (Select distinct(SYMBOL) from TempX);
+
+--------------------------
 
 
 INSERT INTO VEN.STOCKRECOMMENDATIONTABLE (STOCKSYMBOL, RECOMMENDEDBY) VALUES ('AXON', 'RULEBREAKER');
