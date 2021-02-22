@@ -125,9 +125,31 @@ from
 where a.SYMBOL = p.SYMBOL and
  a.SYMBOL in (Select distinct(STOCKSYMBOL) from Ven.STOCKRECOMMENDATIONTABLE);
 
+--
+Select a.SYMBOL, a.QUANTITY, a.COSTPERSHARE,  a.QUANTITY*a.COSTPERSHARE , b.RECOMMENDEDBY from Ven.POSITIONTABLE a, Ven.STOCKRECOMMENDATIONTABLE b
+where a.SYMBOL = b.STOCKSYMBOL and ((a.COSTPERSHARE*a.QUANTITY) <800)
 
 --
+Create view Ven.WhatToGetNowUndrbought as
+(Select a.STOCKSYMBOL as SYMBOL,  count(a.STOCKSYMBOL) as COUNT from Ven.STOCKRECOMMENDATIONTABLE a
+where a.STOCKSYMBOL in (Select a.SYMBOL from Ven.POSITIONTABLE a, Ven.STOCKRECOMMENDATIONTABLE b
+where a.SYMBOL = b.STOCKSYMBOL and (a.COSTPERSHARE*a.QUANTITY) <900)
+group by STOCKSYMBOL);
+
+Select a.SYMBOL from Ven.POSITIONTABLE a, Ven.STOCKRECOMMENDATIONTABLE b
+where a.SYMBOL = b.STOCKSYMBOL and (a.COSTPERSHARE*a.QUANTITY) <900
+
+-----
+Select Sum(Price) from Ven.HOWMUCHTOBUYOFWHAT;
+---
+
+
+Select a.SYMBOL from ven.POSITIONTABLE a where a.ASSETTYPE = 'Equity'
+                                           and  a.SYMBOL not in (Select SYMBOL from Ven.SYMBOLSTABLE)
 --REMOVE DUPS FROM STOCK SYMBOLS
+
+--
+
 
 Select SUM(PRICE*HOWMUCH) from Ven.HowMuchToBuyOfWhat;
 
