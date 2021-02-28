@@ -128,25 +128,47 @@ where a.SYMBOL = p.SYMBOL and
 --
 Select a.SYMBOL, a.QUANTITY, a.COSTPERSHARE,  a.QUANTITY*a.COSTPERSHARE , b.RECOMMENDEDBY from Ven.POSITIONTABLE a, Ven.STOCKRECOMMENDATIONTABLE b
 where a.SYMBOL = b.STOCKSYMBOL and ((a.COSTPERSHARE*a.QUANTITY) <800)
-
 --
-Create view Ven.WhatToGetNowUndrbought as
+Select  a.SYMBOL, b.COSTPERSHARE, b.QUANTITY, (b.QUANTITY*b.COSTPERSHARE) as Cost , c.RECOMMENDEDBY, d.PRICE as MktPrice,
+       (d.PRICE-b.COSTPERSHARE)*100/b.COSTPERSHARE as  "Percent"
+from Ven.WHATTOGETNOWUNDRBOUGHT a, Ven.POSITIONTABLE b,
+   Ven.STOCKRECOMMENDATIONTABLE c, Ven.MARKETPRICE d, Ven.WhatToGetNowUndrbought800 e
+where a.SYMBOL=b.SYMBOL and  c.STOCKSYMBOL=b.SYMBOL and c.STOCKSYMBOL=d.SYMBOL and c.STOCKSYMBOL=e.SYMBOL and
+      b.QUANTITY*b.COSTPERSHARE < 800 and e.COUNT = 2;
+--
+
+Select  b.SYMBOL, d.price, b.COSTPERSHARE, b.QUANTITY, (b.QUANTITY*b.COSTPERSHARE) as Cost , d.PRICE as MktPrice, (b.QUANTITY*d.PRICE) as Value,
+       (d.PRICE-b.COSTPERSHARE)*100/b.COSTPERSHARE as  "Percent"
+from Ven.POSITIONTABLE b,
+    Ven.MARKETPRICE d
+where  b.SYMBOL=d.SYMBOL order by b.SYMBOL;
+---
+Select Sum (a.COSTPERSHARE*a.QUANTITY)   from Ven.POSITIONTABLE a where a.ASSETTYPE='Option' ;
+
+Select Sum (a.COSTPERSHARE*a.QUANTITY) , Sum(a.QUANTITY*b.PRICE)  from Ven.POSITIONTABLE a, Ven.MARKETPRICE b where a.ASSETTYPE='Equity' and a.SYMBOL=b.SYMBOL;
+
+Select a.SYMBOL, (a.COSTPERSHARE*a.QUANTITY) , a.QUANTITY*b.PRICE  from Ven.POSITIONTABLE a, Ven.MARKETPRICE b where a.SYMBOL=b.SYMBOL;
+--
+Create view Ven.WhatToGetNowUndrbought800 as
 (Select a.STOCKSYMBOL as SYMBOL,  count(a.STOCKSYMBOL) as COUNT from Ven.STOCKRECOMMENDATIONTABLE a
 where a.STOCKSYMBOL in (Select a.SYMBOL from Ven.POSITIONTABLE a, Ven.STOCKRECOMMENDATIONTABLE b
-where a.SYMBOL = b.STOCKSYMBOL and (a.COSTPERSHARE*a.QUANTITY) <900)
+where a.SYMBOL = b.STOCKSYMBOL and a.COSTPERSHARE*a.QUANTITY <800)
 group by STOCKSYMBOL);
 
 Select a.SYMBOL from Ven.POSITIONTABLE a, Ven.STOCKRECOMMENDATIONTABLE b
-where a.SYMBOL = b.STOCKSYMBOL and (a.COSTPERSHARE*a.QUANTITY) <900
+where a.SYMBOL = b.STOCKSYMBOL and (a.COSTPERSHARE*a.QUANTITY) <800
 
 -----
 Select Sum(Price) from Ven.HOWMUCHTOBUYOFWHAT;
 ---
 
-
+-- Find Symbols that have positions but are not being tarcked.
 Select a.SYMBOL from ven.POSITIONTABLE a where a.ASSETTYPE = 'Equity'
                                            and  a.SYMBOL not in (Select SYMBOL from Ven.SYMBOLSTABLE)
 --REMOVE DUPS FROM STOCK SYMBOLS
+Select a.SYMBOL from ven.POSITIONTABLE a where a.ASSETTYPE = 'Equity'
+                                           and  a.SYMBOL not in (Select SYMBOL from Ven.MARKETPRICE)
+
 
 --
 
