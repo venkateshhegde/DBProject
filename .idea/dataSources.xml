@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="MyDbTest@10.0.0.52" uuid="c9c06031-9737-4360-b72a-fbb0a1ac54e5">
+    <data-source source="LOCAL" name="MyDbTest@127.0.0.1" uuid="c9c06031-9737-4360-b72a-fbb0a1ac54e5">
       <driver-ref>derby.remote</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.apache.derby.jdbc.ClientDriver</jdbc-driver>
-      <jdbc-url>jdbc:derby://10.0.0.52:1527//VENROOT/DerbyDb/MyDbTest;create=true</jdbc-url>
+      <jdbc-url>jdbc:derby://127.0.0.1:1527//VENROOT/DerbyDb/MyDbTest;create=true</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
